@@ -1,4 +1,7 @@
 
+using dotenv.net;
+using NewsService.Services;
+
 namespace NewsService
 {
     public class Program
@@ -6,6 +9,11 @@ namespace NewsService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            DotEnv.Load();
+
+
+            builder.Services.AddHttpClient<News>();
 
             // Add services to the container.
 

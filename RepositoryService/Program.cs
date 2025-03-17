@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using RepositoryService.Data;
+using RepositoryService.Services;
 
 namespace RepositoryService
 {
@@ -7,16 +10,36 @@ namespace RepositoryService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+            }
+
+            // Add DbContext and repository
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseMySQL(connectionString));
+
+
+            // Register HttpClient
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddDistributedMemoryCache();
+
+            // Register GitHubService as Scoped
+            builder.Services.AddScoped<GitHubApiService>();
+            builder.Services.AddScoped<RepoService>();
+
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -24,9 +47,7 @@ namespace RepositoryService
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
 
             app.MapControllers();
 
